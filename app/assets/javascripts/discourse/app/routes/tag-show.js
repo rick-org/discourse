@@ -169,7 +169,6 @@ export default DiscourseRoute.extend(FilterModeMixin, {
     this._super(...arguments);
     this.searchService.set("searchContext", null);
   },
-
   actions: {
     invalidateModel() {
       this.refresh();
