@@ -6,7 +6,7 @@ describe Permalink do
 
   describe "normalization" do
     it "correctly normalizes" do
-      normalizer = Permalink::Normalizer.new("/(\\/hello.*)\\?.*/\\1|/(\\/bye.*)\\?.*/\\1")
+      normalizer = Normalizer.new("/(\\/hello.*)\\?.*/\\1|/(\\/bye.*)\\?.*/\\1")
 
       expect(normalizer.normalize("/hello?a=1")).to eq("/hello")
       expect(normalizer.normalize("/bye?test=1")).to eq("/bye")

@@ -131,6 +131,34 @@ describe User do
     end
   end
 
+  describe 'normalized_email' do
+    it 'does nothing if no rules are present' do
+      email = user.user_emails.create(email: "a.b+c@example.com", primary: false)
+      expect(email.normalized_email).to eq("a.b+c@example.com")
+      expect(email).to be_valid
+    end
+
+    it 'can remove parts of email' do
+      SiteSetting.email_normalization = "/\\./"
+
+      email = user.user_emails.create(email: "a.b.c.d.e@example.com", primary: false)
+      expect(email.normalized_email).to eq("abcde@examplecom")
+      expect(email).to be_valid
+    end
+
+    it 'checks if normalized email is duplicated' do
+      SiteSetting.email_normalization = "/\\./|/\\+[^@]*@/@"
+
+      email = user.user_emails.create(email: "a.b+c@example.com", primary: false)
+      expect(email.normalized_email).to eq("ab@examplecom")
+      expect(email).to be_valid
+
+      email = user.user_emails.create(email: "a.b+c@example.com", primary: false)
+      expect(email.normalized_email).to eq("ab@examplecom")
+      expect(email).not_to be_valid
+    end
+  end
+
   describe '#count_by_signup_date' do
     before(:each) do
       User.destroy_all

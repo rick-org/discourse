@@ -510,6 +510,10 @@ login:
     default: ""
     type: list
     list_type: simple
+  email_normalization:
+    default: ""
+    type: list
+    list_type: simple
   auto_approve_email_domains:
     default: ""
     type: list

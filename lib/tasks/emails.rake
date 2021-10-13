@@ -227,3 +227,11 @@ task 'emails:test', [:email] => [:environment] do |_, args|
     STR
   end
 end
+
+desc "use this task to normalize all emails"
+task "emails:normalize" => :environment do
+  UserEmail.find_each do |user_email|
+    user_email.normalize_email
+    user_email.save!
+  end
+end

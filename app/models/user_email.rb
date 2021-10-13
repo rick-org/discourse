@@ -7,6 +7,7 @@ class UserEmail < ActiveRecord::Base
   attr_accessor :skip_validate_unique_email
 
   before_validation :strip_downcase_email
+  before_validation :normalize_email
 
   validates :email, presence: true
   validates :email, email: true, if: :validate_email?
@@ -16,6 +17,11 @@ class UserEmail < ActiveRecord::Base
   validate :unique_email, if: :validate_unique_email?
 
   scope :secondary, -> { where(primary: false) }
+
+  def normalize_email
+    normalizer = Normalizer.new(SiteSetting.email_normalization)
+    self.normalized_email = normalizer.normalize_all(self.email.strip.downcase)
+  end
 
   private
 
@@ -37,7 +43,7 @@ class UserEmail < ActiveRecord::Base
   end
 
   def unique_email
-    if self.class.where("lower(email) = ?", email).exists?
+    if self.class.where("lower(email) = ?", email).exists? || (SiteSetting.email_normalization.present? && self.class.where("lower(normalized_email) = ?", normalized_email).exists?)
       self.errors.add(:email, :taken)
     end
   end
@@ -55,16 +61,18 @@ end
 #
 # Table name: user_emails
 #
-#  id         :integer          not null, primary key
-#  user_id    :integer          not null
-#  email      :string(513)      not null
-#  primary    :boolean          default(FALSE), not null
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
+#  id               :integer          not null, primary key
+#  user_id          :integer          not null
+#  email            :string(513)      not null
+#  primary          :boolean          default(FALSE), not null
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#  normalized_email :string
 #
 # Indexes
 #
 #  index_user_emails_on_email                (lower((email)::text)) UNIQUE
+#  index_user_emails_on_normalized_email     (lower((normalized_email)::text)) UNIQUE
 #  index_user_emails_on_user_id              (user_id)
 #  index_user_emails_on_user_id_and_primary  (user_id,primary) UNIQUE WHERE "primary"
 #
